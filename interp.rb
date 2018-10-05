@@ -243,7 +243,7 @@ end
 # `minruby_load()` == `File.read(ARGV.shift)`
 # `minruby_parse(str)` parses a program text given, and returns its AST
 while true
-  fname = ARGV.shift
+  fname = shift()
   break unless fname
   debug_p '------------------ filename', fname
 
