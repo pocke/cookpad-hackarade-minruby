@@ -28,9 +28,9 @@ files = params[:f] ? Array(params[:f]) : Dir.glob('test*.rb').sort
 Parallel.map(files, in_threads: files.count) do |f|
   min = 
     if params[:s]
-      sh! "ruby interp.rb interp.rb #{f}"
+      sh! "ruby #{"interp.rb " * params[:s].to_i} #{f}"
     else
-      sh! "ruby #{"interp.rb" * params[:s].to_i} #{f}"
+      sh! "ruby interp.rb #{f}"
     end
   org = sh! "ruby -r./fizzbuzz.rb #{f}"
 
