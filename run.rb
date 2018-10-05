@@ -1,6 +1,7 @@
 require 'open3'
 require 'parallel'
 require 'optparse'
+require 'pp'
 
 opt = OptionParser.new
 params = {}
@@ -24,7 +25,7 @@ m = Mutex.new
 
 files = params[:f] ? Array(params[:f]) : Dir.glob('test*.rb').sort
 
-Parallel.each(files, in_threads: files.count) do |f|
+Parallel.map(files, in_threads: files.count) do |f|
   min = 
     if params[:s]
       sh! "ruby interp.rb interp.rb #{f}"
@@ -38,9 +39,15 @@ Parallel.each(files, in_threads: files.count) do |f|
   File.write(min_f, min)
   File.write(org_f, org)
   sh!("diff #{min_f} #{org_f}")
+  nil
 rescue => ex
   m.synchronize {
-    puts "failed: #{f}"
-    pp ex
+    <<~MSG
+      failed: #{f}
+      #{ex.pretty_inspect}
+    MSG
   }
+end.compact.each do |msg|
+  puts '-' * 100
+  puts msg
 end
