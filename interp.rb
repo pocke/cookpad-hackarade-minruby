@@ -160,17 +160,25 @@ def evaluate(exp, env)
 end
 
 
+$debug = !ENV['NO_MINRUBY_DEBUG'] 
+
+def debug_p(*args)
+  pp(*args) if $debug
+end
 
 # `minruby_load()` == `File.read(ARGV.shift)`
 # `minruby_parse(str)` parses a program text given, and returns its AST
 while true
   fname = ARGV.shift
   break unless fname
-  puts '-------------------------'
-  puts fname
-  puts '-------------------------'
+  debug_p '------------------ filename', fname
+
   f = File.read(fname)
   $function_definitions = {}
   env = {}
-  evaluate(minruby_parse(f), env)
+
+  ast = minruby_parse(f)
+  debug_p '--------------- ast', ast
+
+  evaluate(ast, env)
 end
