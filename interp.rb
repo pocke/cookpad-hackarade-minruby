@@ -17,44 +17,10 @@ def evaluate(exp, env)
   when "lit"
     exp[1] # return the immediate value as is
 
-  when "+"
-    evaluate(exp[1], env) + evaluate(exp[2], env)
-  when "-"
-    evaluate(exp[1], env) - evaluate(exp[2], env)
-  when "*"
-    evaluate(exp[1], env) * evaluate(exp[2], env)
-  when "/"
-    evaluate(exp[1], env) / evaluate(exp[2], env)
-  when "%"
-    evaluate(exp[1], env) % evaluate(exp[2], env)
-  when "<"
-    evaluate(exp[1], env) < evaluate(exp[2], env)
-  when ">"
-    evaluate(exp[1], env) > evaluate(exp[2], env)
-  when "=="
-    evaluate(exp[1], env) == evaluate(exp[2], env)
-  when "&&"
-    evaluate(exp[1], env) && evaluate(exp[2], env)
-  when "||"
-    evaluate(exp[1], env) || evaluate(exp[2], env)
-
-
 #
 ## Problem 2: Statements and variables
 #
 
-  when "stmts"
-    # Statements: sequential evaluation of one or more expressions.
-    #
-    # Advice 1: Insert `pp(exp)` and observe the AST first.
-    # Advice 2: Apply `evaluate` to each child of this node.
-    idx = 1
-    res = nil
-    while v = exp[idx]
-      res = evaluate(v, env)
-      idx = idx + 1
-    end
-    res
 
   # The second argument of this method, `env`, is an "environement" that
   # keeps track of the values stored to variables.
@@ -66,6 +32,9 @@ def evaluate(exp, env)
     #
     # Advice: env[???]
     env[exp[1]]
+
+  when "ary_ref"
+    evaluate(exp[1], env)[evaluate(exp[2], env)]
 
   when "var_assign"
     # Variable assignment: store (or overwrite) the value to the environment
@@ -91,16 +60,22 @@ def evaluate(exp, env)
     if evaluate(exp[1], env)
       evaluate(exp[2], env)
     else
-      if exp[3]
-        evaluate(exp[3], env)
-      end
+      exp[3] && evaluate(exp[3], env)
     end
 
-  when "while"
-    # Loop.
-    while evaluate(exp[1], env)
-      evaluate(exp[2], env)
+  when "stmts"
+    # Statements: sequential evaluation of one or more expressions.
+    #
+    # Advice 1: Insert `pp(exp)` and observe the AST first.
+    # Advice 2: Apply `evaluate` to each child of this node.
+    idx = 1
+    res = nil
+    while v = exp[idx]
+      res = evaluate(v, env)
+      idx = idx + 1
     end
+    res
+
 
 
 #
@@ -113,15 +88,13 @@ def evaluate(exp, env)
 
     if func
       new_env = {}
-      arg_names = func[0]
-      body = func[1]
       idx = 0
-      while name = arg_names[idx]
+      while name = func[0][idx]
         v = evaluate(exp[2 + idx], env)
         new_env[name] = v
         idx = idx + 1
       end
-      evaluate(body, new_env)
+      evaluate(func[1], new_env)
     else
       # We couldn't find a user-defined function definition;
       # it should be a builtin function.
@@ -176,8 +149,6 @@ def evaluate(exp, env)
     end
     res
 
-  when "ary_ref"
-    evaluate(exp[1], env)[evaluate(exp[2], env)]
 
   when "ary_assign"
     evaluate(exp[1], env)[evaluate(exp[2], env)] = evaluate(exp[3], env)
@@ -190,13 +161,13 @@ def evaluate(exp, env)
       idx = idx + 2
     end
     res
+
   when 'case'
     v = evaluate(exp[1], env)
-    whens = exp[2]
     res = nil
     not_done = true
     idx = 0
-    while not_done && (w = whens[idx])
+    while not_done && (w = exp[2][idx])
       if evaluate(w[0], env) == v
         not_done = false
         res = evaluate(w[1], env)
@@ -209,6 +180,34 @@ def evaluate(exp, env)
     else
       res
     end
+
+  when "+"
+    evaluate(exp[1], env) + evaluate(exp[2], env)
+  when "-"
+    evaluate(exp[1], env) - evaluate(exp[2], env)
+  when "*"
+    evaluate(exp[1], env) * evaluate(exp[2], env)
+  when "/"
+    evaluate(exp[1], env) / evaluate(exp[2], env)
+  when "%"
+    evaluate(exp[1], env) % evaluate(exp[2], env)
+  when "<"
+    evaluate(exp[1], env) < evaluate(exp[2], env)
+  when ">"
+    evaluate(exp[1], env) > evaluate(exp[2], env)
+  when "=="
+    evaluate(exp[1], env) == evaluate(exp[2], env)
+  when "&&"
+    evaluate(exp[1], env) && evaluate(exp[2], env)
+  when "||"
+    evaluate(exp[1], env) || evaluate(exp[2], env)
+
+  when "while"
+    # Loop.
+    while evaluate(exp[1], env)
+      evaluate(exp[2], env)
+    end
+
   else
     p exp
     raise("unknown node" + pp_str(exp))
