@@ -63,19 +63,6 @@ def evaluate(exp, env)
       exp[3] && evaluate(exp[3], env)
     end
 
-  when "stmts"
-    # Statements: sequential evaluation of one or more expressions.
-    #
-    # Advice 1: Insert `pp(exp)` and observe the AST first.
-    # Advice 2: Apply `evaluate` to each child of this node.
-    idx = 1
-    res = nil
-    while v = exp[idx]
-      res = evaluate(v, env)
-      idx = idx + 1
-    end
-    res
-
 
 
 #
@@ -92,7 +79,7 @@ def evaluate(exp, env)
       while name = func[0][idx]
         v = evaluate(exp[2 + idx], env)
         new_env[name] = v
-        idx = idx + 1
+        idx += 1
       end
       evaluate(func[1], new_env)
     else
@@ -104,6 +91,8 @@ def evaluate(exp, env)
         # MinRuby's `p` method is implemented by Ruby's `p` method.
         p(evaluate(exp[2], env))
       # ... Problem 4
+      when 'function_definitions'
+        function_definitions()
       when "Integer"
         Integer(evaluate(exp[2], env))
       when "fizzbuzz"
@@ -116,8 +105,6 @@ def evaluate(exp, env)
         minruby_load()
       # when 'pp_str'
       #   pp_str(evaluate(exp[2], env))
-      when 'function_definitions'
-        function_definitions()
       else
         raise("unknown builtin function: " + exp[1])
       end
@@ -140,27 +127,10 @@ def evaluate(exp, env)
 #
 
   # You don't need advices anymore, do you?
-  when "ary_new"
-    idx = 1
-    res = []
-    while v = exp[idx]
-      res[idx-1] = evaluate(v, env)
-      idx = idx + 1
-    end
-    res
 
 
   when "ary_assign"
     evaluate(exp[1], env)[evaluate(exp[2], env)] = evaluate(exp[3], env)
-
-  when "hash_new"
-    idx = 1
-    res = {}
-    while v = exp[idx]
-      res[evaluate(v, env)] = evaluate(exp[idx+1], env)
-      idx = idx + 2
-    end
-    res
 
   when 'case'
     v = evaluate(exp[1], env)
@@ -172,7 +142,7 @@ def evaluate(exp, env)
         not_done = false
         res = evaluate(w[1], env)
       end
-      idx = idx + 1
+      idx += 1
     end
 
     if not_done
@@ -180,7 +150,21 @@ def evaluate(exp, env)
     else
       res
     end
+  when "stmts"
+    # Statements: sequential evaluation of one or more expressions.
+    #
+    # Advice 1: Insert `pp(exp)` and observe the AST first.
+    # Advice 2: Apply `evaluate` to each child of this node.
+    idx = 1
+    res = nil
+    while v = exp[idx]
+      res = evaluate(v, env)
+      idx += 1
+    end
+    res
 
+  when 'opassign' # support only plus
+    env[exp[2]] = evaluate(exp[3], env) + env[exp[2]]
   when "+"
     evaluate(exp[1], env) + evaluate(exp[2], env)
   when "-"
@@ -201,6 +185,24 @@ def evaluate(exp, env)
     evaluate(exp[1], env) && evaluate(exp[2], env)
   when "||"
     evaluate(exp[1], env) || evaluate(exp[2], env)
+
+  when "hash_new"
+    idx = 1
+    res = {}
+    while v = exp[idx]
+      res[evaluate(v, env)] = evaluate(exp[idx+1], env)
+      idx += 2
+    end
+    res
+  when "ary_new"
+    idx = 1
+    res = []
+    while v = exp[idx]
+      res[idx-1] = evaluate(v, env)
+      idx += 1
+    end
+    res
+
 
   when "while"
     # Loop.
