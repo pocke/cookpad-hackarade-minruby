@@ -99,9 +99,9 @@ def evaluate(exp, env)
 
   when "func_call"
     # Lookup the function definition by the given function name.
-    func = $function_definitions[exp[1]]
+    func = function_definitions()[exp[1]]
 
-    if func.nil?
+    if func == nil
       # We couldn't find a user-defined function definition;
       # it should be a builtin function.
       # Dispatch upon the given function name, and do paticular tasks.
@@ -126,6 +126,8 @@ def evaluate(exp, env)
         minruby_load()
       when 'pp_str'
         pp_str(evaluate(exp[2], env))
+      when 'function_definitions'
+        function_definitions()
       else
         raise("unknown builtin function: " + exp[1])
       end
@@ -169,10 +171,10 @@ def evaluate(exp, env)
     # Add a new function definition to function definition list.
     # The AST of "func_def" contains function name, parameter list, and the
     # child AST of function body.
-    # All you need is store them into $function_definitions.
+    # All you need is store them into $function_definitions().
     #
-    # Advice: $function_definitions[???] = ???
-    $function_definitions[exp[1]] = [exp[2], exp[3]]
+    # Advice: $function_definitions()[???] = ???
+    function_definitions()[exp[1]] = [exp[2], exp[3]]
 
 
 #
@@ -227,7 +229,7 @@ end
 #     pp '------------------ filename', fname
 # 
 #     f = File.read(fname)
-#     $function_definitions = {}
+#     $function_definitions() = {}
 #     env = {}
 # 
 #     ast = minruby_parse(f)
@@ -250,7 +252,7 @@ end
 #   idx = 1
 #   while fname = ARGV[idx]
 #     f = File.read(fname)
-#     $function_definitions = {}
+#     $function_definitions() = {}
 #     env = {}
 # 
 #     ast = minruby_parse(f)
@@ -263,5 +265,4 @@ end
 # 
 # main()
 
-$function_definitions = {}
 evaluate(minruby_parse(minruby_load()), {})

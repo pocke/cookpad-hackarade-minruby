@@ -20,3 +20,9 @@ end
 def pp_str(obj)
   obj.pretty_inspect
 end
+
+$function_definitions = {}
+
+def function_definitions
+  $function_definitions
+end
