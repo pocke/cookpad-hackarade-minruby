@@ -1,27 +1,5 @@
 require "minruby"
-
-def fizzbuzz(n)
-  while n < 100
-    if n % 3 == 0
-      if n % 5 == 0
-        p("FizzBuzz")
-      else
-        p("Fizz")
-      end
-    else
-      if n % 5 == 0
-        p("Buzz")
-      else
-        p(n)
-      end
-    end
-    n = n + 1
-  end
-end
-
-def shift
-  ARGV.shift
-end
+require_relative './fizzbuzz'
 
 # An implementation of the evaluator
 def evaluate(exp, env)
@@ -138,8 +116,18 @@ def evaluate(exp, env)
         fizzbuzz(evaluate(exp[2], env))
       when 'shift'
         shift()
+      when 'require'
+        require(evaluate(exp[2], env))
+      when 'require_relative'
+        require_relative(evaluate(exp[2], env))
+      when 'minruby_parse'
+        minruby_parse(evaluate(exp[2], env))
+      when 'minruby_load'
+        minruby_load()
+      when 'pp_str'
+        pp_str(evaluate(exp[2], env))
       else
-        raise("unknown builtin function")
+        raise("unknown builtin function: " + exp[1])
       end
     else
 
@@ -196,7 +184,7 @@ def evaluate(exp, env)
     idx = 1
     res = []
     while v = exp[idx]
-      res << evaluate(v, env)
+      res[idx-1] = evaluate(v, env)
       idx = idx + 1
     end
     res
@@ -217,55 +205,63 @@ def evaluate(exp, env)
     res
 
   else
-    p("error")
-    pp(exp)
-    raise("unknown node")
+    raise("unknown node" + pp_str(exp))
   end
 end
 
 
-$debug = !ENV['NO_MINRUBY_DEBUG']
+# if $debug
+#   def capt(&block)
+#     $stdout = StringIO.new
+#     block.call
+#     return $stdout.string
+#   ensure
+#     $stdout = STDOUT
+#   end
+# end
+# 
+# def debug
+#   while true
+#     fname = shift()
+#     break unless fname
+#     pp '------------------ filename', fname
+# 
+#     f = File.read(fname)
+#     $function_definitions = {}
+#     env = {}
+# 
+#     ast = minruby_parse(f)
+#     pp '--------------- ast', ast
+# 
+# 
+# 
+#     minruby_out = capt{evaluate(ast, env)}
+#     ruby_out = capt{eval f}
+#     unless minruby_out == ruby_out
+#       File.write('/tmp/minruby', minruby_out)
+#       File.write('/tmp/ruby', ruby_out)
+#       system 'git diff --no-index /tmp/minruby /tmp/ruby'
+#       raise
+#     end
+#   end
+# end
 
-def debug_p(*args)
-  pp(*args) if $debug
-end
+# def main
+#   idx = 1
+#   while fname = ARGV[idx]
+#     f = File.read(fname)
+#     $function_definitions = {}
+#     env = {}
+# 
+#     ast = minruby_parse(f)
+# 
+#     evaluate(ast, env)
+# 
+#     idx = idx + 1
+#   end
+# end
+# 
+# main()
 
-if $debug
-  def capt(&block)
-    $stdout = StringIO.new
-    block.call
-    return $stdout.string
-  ensure
-    $stdout = STDOUT
-  end
-end
-
-# `minruby_load()` == `File.read(ARGV.shift)`
-# `minruby_parse(str)` parses a program text given, and returns its AST
-while true
-  fname = shift()
-  break unless fname
-  debug_p '------------------ filename', fname
-
-  f = File.read(fname)
-  $function_definitions = {}
-  env = {}
-
-  ast = minruby_parse(f)
-  debug_p '--------------- ast', ast
-
-
-
-  if $debug
-    minruby_out = capt{evaluate(ast, env)}
-    ruby_out = capt{eval f}
-    unless minruby_out == ruby_out
-      File.write('/tmp/minruby', minruby_out)
-      File.write('/tmp/ruby', ruby_out)
-      system 'git diff --no-index /tmp/minruby /tmp/ruby'
-      raise
-    end
-  else
-    evaluate(ast, env)
-  end
-end
+$function_definitions = {}
+evaluate(minruby_parse(minruby_load()), {})
