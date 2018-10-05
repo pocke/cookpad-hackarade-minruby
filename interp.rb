@@ -112,7 +112,7 @@ def evaluate(exp, env)
       idx = 0
       while name = arg_names[idx]
         v = evaluate(exp[2 + idx], env)
-        evaluate(['var_assign', name, ['lit', v]], new_env)
+        new_env[name] = v
         idx = idx + 1
       end
       evaluate(body, new_env)
