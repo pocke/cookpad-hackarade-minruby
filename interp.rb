@@ -36,39 +36,6 @@ def evaluate(exp, env)
   when "ary_ref"
     evaluate(exp[1], env)[evaluate(exp[2], env)]
 
-  when "var_assign"
-    # Variable assignment: store (or overwrite) the value to the environment
-    #
-    # Advice: env[???] = ???
-    env[exp[1]] = evaluate(exp[2], env)
-
-
-#
-## Problem 3: Branchs and loops
-#
-
-  when "if"
-    # Branch.  It evaluates either exp[2] or exp[3] depending upon the
-    # evaluation result of exp[1],
-    #
-    # Advice:
-    #   if ???
-    #     ???
-    #   else
-    #     ???
-    #   end
-    if evaluate(exp[1], env)
-      evaluate(exp[2], env)
-    else
-      exp[3] && evaluate(exp[3], env)
-    end
-
-
-
-#
-## Problem 4: Function calls
-#
-
   when "func_call"
     # Lookup the function definition by the given function name.
     func = function_definitions()[exp[1]]
@@ -103,6 +70,8 @@ def evaluate(exp, env)
         minruby_parse(evaluate(exp[2], env))
       when 'minruby_load'
         minruby_load()
+      # when 'rec'
+      #   rec(evaluate(exp[2], env))
       # when 'pp_str'
       #   pp_str(evaluate(exp[2], env))
       else
@@ -110,27 +79,11 @@ def evaluate(exp, env)
       end
     end
 
-  when "func_def"
-    # Function definition.
+  when "var_assign"
+    # Variable assignment: store (or overwrite) the value to the environment
     #
-    # Add a new function definition to function definition list.
-    # The AST of "func_def" contains function name, parameter list, and the
-    # child AST of function body.
-    # All you need is store them into $function_definitions().
-    #
-    # Advice: $function_definitions()[???] = ???
-    function_definitions()[exp[1]] = [exp[2], exp[3]]
-
-
-#
-## Problem 6: Arrays and Hashes
-#
-
-  # You don't need advices anymore, do you?
-
-
-  when "ary_assign"
-    evaluate(exp[1], env)[evaluate(exp[2], env)] = evaluate(exp[3], env)
+    # Advice: env[???] = ???
+    env[exp[1]] = evaluate(exp[2], env)
 
   when 'case'
     v = evaluate(exp[1], env)
@@ -163,28 +116,44 @@ def evaluate(exp, env)
     end
     res
 
+#
+## Problem 3: Branchs and loops
+#
+
+  when "if"
+    # Branch.  It evaluates either exp[2] or exp[3] depending upon the
+    # evaluation result of exp[1],
+    #
+    # Advice:
+    #   if ???
+    #     ???
+    #   else
+    #     ???
+    #   end
+    if evaluate(exp[1], env)
+      evaluate(exp[2], env)
+    else
+      exp[3] && evaluate(exp[3], env)
+    end
+
   when 'opassign' # support only plus
     env[exp[2]] = evaluate(exp[3], env) + env[exp[2]]
-  when "+"
-    evaluate(exp[1], env) + evaluate(exp[2], env)
-  when "-"
-    evaluate(exp[1], env) - evaluate(exp[2], env)
-  when "*"
-    evaluate(exp[1], env) * evaluate(exp[2], env)
-  when "/"
-    evaluate(exp[1], env) / evaluate(exp[2], env)
-  when "%"
-    evaluate(exp[1], env) % evaluate(exp[2], env)
-  when "<"
-    evaluate(exp[1], env) < evaluate(exp[2], env)
-  when ">"
-    evaluate(exp[1], env) > evaluate(exp[2], env)
-  when "=="
-    evaluate(exp[1], env) == evaluate(exp[2], env)
+
   when "&&"
     evaluate(exp[1], env) && evaluate(exp[2], env)
-  when "||"
-    evaluate(exp[1], env) || evaluate(exp[2], env)
+  when "=="
+    evaluate(exp[1], env) == evaluate(exp[2], env)
+  when "ary_assign"
+    evaluate(exp[1], env)[evaluate(exp[2], env)] = evaluate(exp[3], env)
+
+  when "while"
+    # Loop.
+    while evaluate(exp[1], env)
+      evaluate(exp[2], env)
+    end
+
+  when "+"
+    evaluate(exp[1], env) + evaluate(exp[2], env)
 
   when "hash_new"
     idx = 1
@@ -194,6 +163,27 @@ def evaluate(exp, env)
       idx += 2
     end
     res
+
+  when "-"
+    evaluate(exp[1], env) - evaluate(exp[2], env)
+  when "*"
+    evaluate(exp[1], env) * evaluate(exp[2], env)
+  when "<"
+    evaluate(exp[1], env) < evaluate(exp[2], env)
+  when "/"
+    evaluate(exp[1], env) / evaluate(exp[2], env)
+  when "%"
+    evaluate(exp[1], env) % evaluate(exp[2], env)
+  when "func_def"
+    # Function definition.
+    #
+    # Add a new function definition to function definition list.
+    # The AST of "func_def" contains function name, parameter list, and the
+    # child AST of function body.
+    # All you need is store them into $function_definitions().
+    #
+    # Advice: $function_definitions()[???] = ???
+    function_definitions()[exp[1]] = [exp[2], exp[3]]
   when "ary_new"
     idx = 1
     res = []
@@ -202,13 +192,30 @@ def evaluate(exp, env)
       idx += 1
     end
     res
+#
+## Problem 4: Function calls
+#
 
 
-  when "while"
-    # Loop.
-    while evaluate(exp[1], env)
-      evaluate(exp[2], env)
-    end
+
+
+#
+## Problem 6: Arrays and Hashes
+#
+
+  # You don't need advices anymore, do you?
+
+
+
+
+  when ">"
+    evaluate(exp[1], env) > evaluate(exp[2], env)
+
+  when "||"
+    evaluate(exp[1], env) || evaluate(exp[2], env)
+
+
+
 
   else
     p exp

@@ -26,3 +26,17 @@ $function_definitions = {}
 def function_definitions
   $function_definitions
 end
+
+$o = []
+def rec(a)
+  $o << a
+  a
+end
+
+at_exit do
+  File.open('/tmp/out', 'a') do |f|
+    $o.each do |line|
+      f.puts line
+    end
+  end
+end
