@@ -137,7 +137,6 @@ def evaluate(exp, env)
       end
     else
 
-
 #
 ## Problem 5: Function definition
 #
@@ -159,7 +158,15 @@ def evaluate(exp, env)
       # (*1) formal parameter: a variable as found in the function definition.
       # For example, `a`, `b`, and `c` are the formal parameters of
       # `def foo(a, b, c)`.
-      raise(NotImplementedError) # Problem 5
+      new_env = env.dup
+      arg_names = func[0]
+      body = func[1]
+      idx = 0
+      while name = arg_names[idx]
+        evaluate(['var_assign', name, exp[2 + idx]], new_env)
+        idx += 1
+      end
+      evaluate(body, new_env)
     end
 
   when "func_def"
@@ -171,7 +178,7 @@ def evaluate(exp, env)
     # All you need is store them into $function_definitions.
     #
     # Advice: $function_definitions[???] = ???
-    raise(NotImplementedError) # Problem 5
+    $function_definitions[exp[1]] = [exp[2], exp[3]]
 
 
 #
