@@ -187,16 +187,28 @@ def evaluate(exp, env)
 
   # You don't need advices anymore, do you?
   when "ary_new"
-    raise(NotImplementedError) # Problem 6
+    idx = 1
+    res = []
+    while v = exp[idx]
+      res << evaluate(v, env)
+      idx += 1
+    end
+    res
 
   when "ary_ref"
-    raise(NotImplementedError) # Problem 6
+    evaluate(exp[1], env)[evaluate(exp[2], env)]
 
   when "ary_assign"
-    raise(NotImplementedError) # Problem 6
+    evaluate(exp[1], env)[evaluate(exp[2], env)] = evaluate(exp[3], env)
 
   when "hash_new"
-    raise(NotImplementedError) # Problem 6
+    idx = 1
+    res = {}
+    while v = exp[idx]
+      res[evaluate(v, env)] = evaluate(exp[idx+1], env)
+      idx += 2
+    end
+    res
 
   else
     p("error")
