@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "minruby"
 require_relative './fizzbuzz'
 
@@ -103,7 +105,18 @@ def evaluate(exp, env)
     # Lookup the function definition by the given function name.
     func = function_definitions()[exp[1]]
 
-    if func == nil
+    if func
+      new_env = {}
+      arg_names = func[0]
+      body = func[1]
+      idx = 0
+      while name = arg_names[idx]
+        v = evaluate(exp[2 + idx], env)
+        evaluate(['var_assign', name, ['lit', v]], new_env)
+        idx = idx + 1
+      end
+      evaluate(body, new_env)
+    else
       # We couldn't find a user-defined function definition;
       # it should be a builtin function.
       # Dispatch upon the given function name, and do paticular tasks.
@@ -133,39 +146,6 @@ def evaluate(exp, env)
       else
         raise("unknown builtin function: " + exp[1])
       end
-    else
-
-#
-## Problem 5: Function definition
-#
-
-      # (You may want to implement "func_def" first.)
-      #
-      # Here, we could find a user-defined function definition.
-      # The variable `func` should be a value that was stored at "func_def":
-      # parameter list and AST of function body.
-      #
-      # Function calls evaluates the AST of function body within a new scope.
-      # You know, you cannot access a varible out of function.
-      # Therefore, you need to create a new environment, and evaluate the
-      # function body under the environment.
-      #
-      # Note, you can access formal parameters (*1) in function body.
-      # So, the new environment must be initialized with each parameter.
-      #
-      # (*1) formal parameter: a variable as found in the function definition.
-      # For example, `a`, `b`, and `c` are the formal parameters of
-      # `def foo(a, b, c)`.
-      new_env = {}
-      arg_names = func[0]
-      body = func[1]
-      idx = 0
-      while name = arg_names[idx]
-        v = evaluate(exp[2 + idx], env)
-        evaluate(['var_assign', name, ['lit', v]], new_env)
-        idx = idx + 1
-      end
-      evaluate(body, new_env)
     end
 
   when "func_def"
