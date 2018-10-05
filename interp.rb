@@ -119,9 +119,9 @@ def evaluate(exp, env)
       when 'shift'
         shift()
       when 'require'
-        require(evaluate(exp[2], env))
+        nil
       when 'require_relative'
-        require_relative(evaluate(exp[2], env))
+        nil
       when 'minruby_parse'
         minruby_parse(evaluate(exp[2], env))
       when 'minruby_load'
