@@ -156,12 +156,13 @@ def evaluate(exp, env)
       # (*1) formal parameter: a variable as found in the function definition.
       # For example, `a`, `b`, and `c` are the formal parameters of
       # `def foo(a, b, c)`.
-      new_env = env.dup
+      new_env = {}
       arg_names = func[0]
       body = func[1]
       idx = 0
       while name = arg_names[idx]
-        evaluate(['var_assign', name, exp[2 + idx]], new_env)
+        v = evaluate(exp[2 + idx], env)
+        evaluate(['var_assign', name, ['lit', v]], new_env)
         idx = idx + 1
       end
       evaluate(body, new_env)
