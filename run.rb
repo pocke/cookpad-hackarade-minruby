@@ -5,7 +5,7 @@ require 'pp'
 
 opt = OptionParser.new
 params = {}
-opt.on('-s') # self hosting
+opt.on('-s N') # self hosting
 opt.on('-f file')
 opt.parse(ARGV, into: params)
 
@@ -30,7 +30,7 @@ Parallel.map(files, in_threads: files.count) do |f|
     if params[:s]
       sh! "ruby interp.rb interp.rb #{f}"
     else
-      sh! "ruby interp.rb #{f}"
+      sh! "ruby #{"interp.rb" * params[:s].to_i} #{f}"
     end
   org = sh! "ruby -r./fizzbuzz.rb #{f}"
 
