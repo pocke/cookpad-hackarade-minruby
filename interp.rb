@@ -25,7 +25,7 @@ def evaluate(exp, env)
   when "%"
     evaluate(exp[1], env) % evaluate(exp[2], env)
 
-  
+
 #
 ## Problem 2: Statements and variables
 #
@@ -50,13 +50,13 @@ def evaluate(exp, env)
     # Variable reference: lookup the value corresponded to the variable
     #
     # Advice: env[???]
-    raise(NotImplementedError) # Problem 2
+    env[exp[1]]
 
   when "var_assign"
     # Variable assignment: store (or overwrite) the value to the environment
     #
     # Advice: env[???] = ???
-    raise(NotImplementedError) # Problem 2
+    env[exp[1]] = evaluate(exp[2], env)
 
 
 #
@@ -164,10 +164,20 @@ def evaluate(exp, env)
 end
 
 
-$debug = !ENV['NO_MINRUBY_DEBUG'] 
+$debug = !ENV['NO_MINRUBY_DEBUG']
 
 def debug_p(*args)
   pp(*args) if $debug
+end
+
+if $debug
+  def capt(&block)
+    $stdout = StringIO.new
+    block.call
+    return $stdout.string
+  ensure
+    $stdout = STDOUT
+  end
 end
 
 # `minruby_load()` == `File.read(ARGV.shift)`
@@ -184,5 +194,18 @@ while true
   ast = minruby_parse(f)
   debug_p '--------------- ast', ast
 
-  evaluate(ast, env)
+
+
+  if $debug
+    minruby_out = capt{evaluate(ast, env)}
+    ruby_out = capt{eval f}
+    unless minruby_out == ruby_out
+      File.write('/tmp/minruby', minruby_out)
+      File.write('/tmp/ruby', ruby_out)
+      system 'git diff --no-index /tmp/minruby /tmp/ruby'
+      raise
+    end
+  else
+    evaluate(ast, env)
+  end
 end
