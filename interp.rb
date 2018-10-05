@@ -17,13 +17,13 @@ def evaluate(exp, env)
   when "+"
     evaluate(exp[1], env) + evaluate(exp[2], env)
   when "-"
-    # Subtraction.  Please fill in.
-    # Use the code above for addition as a reference.
-    # (Almost just copy-and-paste.  This is an exercise.)
-    raise(NotImplementedError) # Problem 1
+    evaluate(exp[1], env) - evaluate(exp[2], env)
   when "*"
-    raise(NotImplementedError) # Problem 1
-  # ... Implement other operators that you need
+    evaluate(exp[1], env) * evaluate(exp[2], env)
+  when "/"
+    evaluate(exp[1], env) / evaluate(exp[2], env)
+  when "%"
+    evaluate(exp[1], env) % evaluate(exp[2], env)
 
   
 #
@@ -160,9 +160,17 @@ def evaluate(exp, env)
 end
 
 
-$function_definitions = {}
-env = {}
 
 # `minruby_load()` == `File.read(ARGV.shift)`
 # `minruby_parse(str)` parses a program text given, and returns its AST
-evaluate(minruby_parse(minruby_load()), env)
+while true
+  fname = ARGV.shift
+  break unless fname
+  puts '-------------------------'
+  puts fname
+  puts '-------------------------'
+  f = File.read(fname)
+  $function_definitions = {}
+  env = {}
+  evaluate(minruby_parse(f), env)
+end
