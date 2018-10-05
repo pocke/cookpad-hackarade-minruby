@@ -1,5 +1,24 @@
 require "minruby"
 
+def fizzbuzz(n)
+  while n < 100
+    if n % 3 == 0
+      if n % 5 == 0
+        p("FizzBuzz")
+      else
+        p("Fizz")
+      end
+    else
+      if n % 5 == 0
+        p("Buzz")
+      else
+        p(n)
+      end
+    end
+    n = n + 1
+  end
+end
+
 # An implementation of the evaluator
 def evaluate(exp, env)
   # exp: A current node of AST
@@ -109,6 +128,10 @@ def evaluate(exp, env)
         # MinRuby's `p` method is implemented by Ruby's `p` method.
         p(evaluate(exp[2], env))
       # ... Problem 4
+      when "Integer"
+        Integer(evaluate(exp[2], env))
+      when "fizzbuzz"
+        fizzbuzz(evaluate(exp[2], env))
       else
         raise("unknown builtin function")
       end
