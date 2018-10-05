@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "minruby"
-require_relative './fizzbuzz'
+require './fizzbuzz'
 
 # An implementation of the evaluator
 def evaluate(exp, env)
@@ -33,6 +33,10 @@ def evaluate(exp, env)
     evaluate(exp[1], env) > evaluate(exp[2], env)
   when "=="
     evaluate(exp[1], env) == evaluate(exp[2], env)
+  when "&&"
+    evaluate(exp[1], env) && evaluate(exp[2], env)
+  when "||"
+    evaluate(exp[1], env) || evaluate(exp[2], env)
 
 
 #
@@ -87,7 +91,9 @@ def evaluate(exp, env)
     if evaluate(exp[1], env)
       evaluate(exp[2], env)
     else
-      evaluate(exp[3], env)
+      if exp[3]
+        evaluate(exp[3], env)
+      end
     end
 
   when "while"
@@ -129,18 +135,14 @@ def evaluate(exp, env)
         Integer(evaluate(exp[2], env))
       when "fizzbuzz"
         fizzbuzz(evaluate(exp[2], env))
-      when 'shift'
-        shift()
       when 'require'
-        nil
-      when 'require_relative'
         nil
       when 'minruby_parse'
         minruby_parse(evaluate(exp[2], env))
       when 'minruby_load'
         minruby_load()
-      when 'pp_str'
-        pp_str(evaluate(exp[2], env))
+      # when 'pp_str'
+      #   pp_str(evaluate(exp[2], env))
       when 'function_definitions'
         function_definitions()
       else
@@ -188,8 +190,27 @@ def evaluate(exp, env)
       idx = idx + 2
     end
     res
+  when 'case'
+    v = evaluate(exp[1], env)
+    whens = exp[2]
+    res = nil
+    not_done = true
+    idx = 0
+    while not_done && (w = whens[idx])
+      if evaluate(w[0], env) == v
+        not_done = false
+        res = evaluate(w[1], env)
+      end
+      idx = idx + 1
+    end
 
+    if not_done
+      evaluate(exp[3], env)
+    else
+      res
+    end
   else
+    p exp
     raise("unknown node" + pp_str(exp))
   end
 end
