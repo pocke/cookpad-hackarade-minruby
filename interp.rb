@@ -19,6 +19,10 @@ def fizzbuzz(n)
   end
 end
 
+def shift
+  ARGV.shift
+end
+
 # An implementation of the evaluator
 def evaluate(exp, env)
   # exp: A current node of AST
@@ -63,7 +67,7 @@ def evaluate(exp, env)
     idx = 1
     while v = exp[idx]
       evaluate(v, env)
-      idx += 1
+      idx = idx + 1
     end
 
   # The second argument of this method, `env`, is an "environement" that
@@ -132,6 +136,8 @@ def evaluate(exp, env)
         Integer(evaluate(exp[2], env))
       when "fizzbuzz"
         fizzbuzz(evaluate(exp[2], env))
+      when 'shift'
+        shift()
       else
         raise("unknown builtin function")
       end
@@ -164,7 +170,7 @@ def evaluate(exp, env)
       idx = 0
       while name = arg_names[idx]
         evaluate(['var_assign', name, exp[2 + idx]], new_env)
-        idx += 1
+        idx = idx + 1
       end
       evaluate(body, new_env)
     end
@@ -191,7 +197,7 @@ def evaluate(exp, env)
     res = []
     while v = exp[idx]
       res << evaluate(v, env)
-      idx += 1
+      idx = idx + 1
     end
     res
 
@@ -206,7 +212,7 @@ def evaluate(exp, env)
     res = {}
     while v = exp[idx]
       res[evaluate(v, env)] = evaluate(exp[idx+1], env)
-      idx += 2
+      idx = idx + 2
     end
     res
 
